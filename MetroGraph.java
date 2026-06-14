@@ -2,90 +2,120 @@ import java.util.*;
 
 public class MetroGraph {
 
-    private HashMap<String, HashMap<String, Integer>> graph;
-    private HashMap<String, String> stationLine = new HashMap<>();
+    private HashMap<String, HashMap<String, Edge>> graph;
 
-public void setStationLine(String station, String line) {
-    stationLine.put(station, line);
-}
-
-public String getStationLine(String station) {
-    return stationLine.getOrDefault(station, "Unknown");
-}
     public MetroGraph() {
         graph = new HashMap<>();
     }
 
-    // Add station
     public void addStation(String station) {
         graph.putIfAbsent(station, new HashMap<>());
     }
 
-    // Add connection between stations
-    public void addEdge(String source, String destination, int distance) {
-        graph.get(source).put(destination, distance);
-        graph.get(destination).put(source, distance);
-    }
-    public PathResult findShortestPath(String source, String destination) {
+    public void addEdge(String source,
+                        String destination,
+                        int distance,
+                        String line) {
 
-    HashMap<String, Integer> distance = new HashMap<>();
-    HashMap<String, String> previous = new HashMap<>();
-    PriorityQueue<String> pq = new PriorityQueue<>(
-            Comparator.comparingInt(distance::get)
-    );
+        addStation(source);
+        addStation(destination);
 
-    // Initialize distances
-    for (String station : graph.keySet()) {
-        distance.put(station, Integer.MAX_VALUE);
+        graph.get(source).put(destination,
+                new Edge(distance, line));
+
+        graph.get(destination).put(source,
+                new Edge(distance, line));
     }
 
-    distance.put(source, 0);
-    pq.add(source);
+    public PathResult findShortestPath(String source,
+                                       String destination) {
 
-    while (!pq.isEmpty()) {
+        HashMap<String, Integer> distance = new HashMap<>();
+        HashMap<String, String> previous = new HashMap<>();
 
-        String current = pq.poll();
+        PriorityQueue<String> pq =
+                new PriorityQueue<>(
+                        Comparator.comparingInt(distance::get));
 
-        if (current.equals(destination)) {
-            break;
+        for (String station : graph.keySet()) {
+            distance.put(station, Integer.MAX_VALUE);
         }
 
-        for (Map.Entry<String, Integer> neighbour :
-                graph.get(current).entrySet()) {
+        distance.put(source, 0);
+        pq.add(source);
 
-            String nextStation = neighbour.getKey();
-            int edgeDistance = neighbour.getValue();
+        while (!pq.isEmpty()) {
 
-            int newDistance =
-                    distance.get(current) + edgeDistance;
+            String current = pq.poll();
 
-            if (newDistance < distance.get(nextStation)) {
+            if (current.equals(destination)) {
+                break;
+            }
 
-                distance.put(nextStation, newDistance);
+            for (Map.Entry<String, Edge> neighbour :
+                    graph.get(current).entrySet()) {
 
-                previous.put(nextStation, current);
+                String nextStation = neighbour.getKey();
 
-                pq.add(nextStation);
+                int edgeDistance =
+                        neighbour.getValue().getDistance();
+
+                int newDistance =
+                        distance.get(current) + edgeDistance;
+
+                if (newDistance < distance.get(nextStation)) {
+
+                    distance.put(nextStation, newDistance);
+
+                    previous.put(nextStation, current);
+
+                    pq.add(nextStation);
+                }
             }
         }
+
+        if (distance.get(destination)
+                == Integer.MAX_VALUE) {
+
+            return new PathResult(
+                    new ArrayList<>(),
+                    Integer.MAX_VALUE
+            );
+        }
+
+        List<String> path = new ArrayList<>();
+
+        String current = destination;
+
+        while (current != null) {
+            path.add(0, current);
+            current = previous.get(current);
+        }
+
+        return new PathResult(
+                path,
+                distance.get(destination)
+        );
     }
 
-    // Build path
-    List<String> path = new ArrayList<>();
+    public String getLine(String source,
+                          String destination) {
 
-    String current = destination;
+        if (graph.containsKey(source)
+                && graph.get(source)
+                         .containsKey(destination)) {
 
-    while (current != null) {
-        path.add(0, current);
-        current = previous.get(current);
+            return graph.get(source)
+                    .get(destination)
+                    .getLine();
+        }
+
+        return "Unknown";
     }
 
-    return new PathResult(
-            path,
-            distance.get(destination)
-    );
-}
-    public HashMap<String, HashMap<String, Integer>> getGraph() {
+    public HashMap<String,
+            HashMap<String, Edge>> getGraph() {
+
         return graph;
     }
 }

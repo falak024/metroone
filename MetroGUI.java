@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
 
 public class MetroGUI extends JFrame {
 
@@ -20,7 +21,7 @@ public class MetroGUI extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(245, 247, 250));
 
-        // ===== HEADER =====
+        // HEADER
         JPanel header = new JPanel();
         header.setBackground(new Color(0, 51, 102));
         header.setBorder(new EmptyBorder(15, 10, 15, 10));
@@ -32,7 +33,7 @@ public class MetroGUI extends JFrame {
         header.add(title);
         add(header, BorderLayout.NORTH);
 
-        // ===== STATIONS =====
+        // Stations
         String[] stations = metro.getGraph().keySet().toArray(new String[0]);
 
         sourceBox = new JComboBox<>(stations);
@@ -41,7 +42,7 @@ public class MetroGUI extends JFrame {
         styleComboBox(sourceBox);
         styleComboBox(destinationBox);
 
-        // ===== BUTTONS =====
+        // Buttons
         JButton findButton = new JButton("🔍 Find Route");
         JButton swapButton = new JButton("🔄 Swap");
         JButton clearButton = new JButton("🗑 Clear");
@@ -50,21 +51,15 @@ public class MetroGUI extends JFrame {
         styleButton(swapButton);
         styleButton(clearButton);
 
-        // ===== CONTROL PANEL =====
+        // Control Panel
         JPanel controlPanel = new JPanel(new GridLayout(4, 2, 15, 15));
         controlPanel.setBackground(Color.WHITE);
         controlPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel sourceLabel = new JLabel("Source Station");
-        sourceLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-
-        JLabel destinationLabel = new JLabel("Destination Station");
-        destinationLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-
-        controlPanel.add(sourceLabel);
+        controlPanel.add(new JLabel("Source Station"));
         controlPanel.add(sourceBox);
 
-        controlPanel.add(destinationLabel);
+        controlPanel.add(new JLabel("Destination Station"));
         controlPanel.add(destinationBox);
 
         controlPanel.add(findButton);
@@ -75,7 +70,7 @@ public class MetroGUI extends JFrame {
 
         add(controlPanel, BorderLayout.SOUTH);
 
-        // ===== RESULT AREA =====
+        // Result Area
         resultArea = new JTextArea();
         resultArea.setEditable(false);
         resultArea.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -92,7 +87,7 @@ public class MetroGUI extends JFrame {
 
         add(scrollPane, BorderLayout.CENTER);
 
-        // ===== FIND ROUTE =====
+        // FIND ROUTE
         findButton.addActionListener(e -> {
 
             String source = (String) sourceBox.getSelectedItem();
@@ -114,51 +109,57 @@ public class MetroGUI extends JFrame {
 
             int distance = result.getDistance();
             int fare = calculateFare(distance);
-            int time = (result.getPath().size() - 1) * 2;
+            int time = (int) Math.ceil(distance * 1.6);
 
             StringBuilder output = new StringBuilder();
 
             output.append("🚇 DELHI METRO ROUTE\n");
-            output.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 
             output.append("📍 From: ").append(source).append("\n");
             output.append("📍 To: ").append(destination).append("\n\n");
 
-            output.append("🛤 Route:\n\n");
+            output.append("🛤 Route Summary:\n\n");
+
+            List<String> path = result.getPath();
+
+            output.append("📍 Source: ")
+                    .append(path.get(0))
+                    .append("\n\n");
 
             String previousLine = "";
+            boolean interchangeFound = false;
 
-for (int i = 0; i < result.getPath().size(); i++) {
+            for (int i = 0; i < path.size() - 1; i++) {
 
-    String station = result.getPath().get(i);
-    String currentLine = metro.getStationLine(station);
+                String from = path.get(i);
+                String to = path.get(i + 1);
 
-    // Interchange detect
-    if (!previousLine.isEmpty()
-            && !previousLine.equals(currentLine)) {
+                String currentLine = metro.getLine(from, to);
 
-        output.append("\n");
-        output.append("🔁 Change from ")
-              .append(previousLine)
-              .append(" Line to ")
-              .append(currentLine)
-              .append(" Line\n\n");
-    }
+                if (!previousLine.isEmpty()
+                        && !previousLine.equals(currentLine)) {
 
-    output.append("🚉 ")
-          .append(station)
-          .append(" (")
-          .append(currentLine)
-          .append(")");
+                    output.append("🔁 Change to ")
+                            .append(currentLine)
+                            .append(" Line at ")
+                            .append(from)
+                            .append("\n");
 
-    if (i != result.getPath().size() - 1) {
-        output.append("\n   │\n   ▼\n");
-    }
+                    interchangeFound = true;
+                }
 
-    previousLine = currentLine;
-}
+                previousLine = currentLine;
+            }
 
-            output.append("\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            if (!interchangeFound) {
+                output.append("✅ No Interchange Required\n");
+            }
+
+            output.append("\n📍 Destination: ")
+                    .append(path.get(path.size() - 1))
+                    .append("\n");
+
+            output.append("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
             output.append("\n📏 Distance : ")
                     .append(distance)
@@ -171,15 +172,13 @@ for (int i = 0; i < result.getPath().size(); i++) {
                     .append(time)
                     .append(" minutes");
 
-            output.append("\n🚉 Stations Covered : ")
-                    .append(result.getPath().size());
 
             output.append("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
             resultArea.setText(output.toString());
         });
 
-        // ===== SWAP =====
+        // SWAP
         swapButton.addActionListener(e -> {
 
             Object temp = sourceBox.getSelectedItem();
@@ -189,7 +188,7 @@ for (int i = 0; i < result.getPath().size(); i++) {
             destinationBox.setSelectedItem(temp);
         });
 
-        // ===== CLEAR =====
+        // CLEAR
         clearButton.addActionListener(e -> {
 
             sourceBox.setSelectedIndex(0);
@@ -229,15 +228,15 @@ for (int i = 0; i < result.getPath().size(); i++) {
 
     private int calculateFare(int distance) {
 
-        if (distance <= 2)
+        if (distance <= 5)
             return 11;
-        else if (distance <= 5)
-            return 21;
         else if (distance <= 12)
-            return 32;
+            return 21;
         else if (distance <= 21)
-            return 43;
+            return 32;
         else if (distance <= 32)
+            return 43;
+        else if (distance <= 43)
             return 54;
         else
             return 64;
