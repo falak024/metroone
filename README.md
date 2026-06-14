@@ -1,7 +1,8 @@
 METROONE- (DELHI METRO ROUTE FINDER)
 A Java based Delhi Metro Route Finder using Dijikstra's algorithm and Swing GUI.
 
-APPLICATION SCREENSHOT- <img width="959" height="503" alt="Screenshot 2026-06-14 225716" src="https://github.com/user-attachments/assets/dd6a48bd-c5fb-49fd-9a07-c72464cb2864" />
+APPLICATION SCREENSHOT- <img width="959" height="503" alt="metro-gui png" src="https://github.com/user-attachments/assets/1e73093c-ada5-476d-a297-e43a1a8450f0" />
+
  
 FEATURES:
 -Shortest path using dijikstra algo
