@@ -11,8 +11,9 @@ Interactive Swing GUI
 
 *TECHNOLOGIES USED*
 Java
-Swings
+Java Swings
 Dijikstra algorithm
+Data Structures( Graphs, Priority Queue)
 OOP
 
 HOW TO RUN-
