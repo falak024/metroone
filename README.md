@@ -5,19 +5,19 @@ APPLICATION SCREENSHOT- <img width="959" height="503" alt="metro-gui png" src="h
 
  
 FEATURES:
--Shortest path using dijikstra algo
--Fare estimation
--Travel time calculation
--30 major delhi metro stations
--Interchange detection
--Interactive Swing GUI
+*Shortest path using dijikstra algo
+*Fare estimation
+*Travel time calculation
+*30 major delhi metro stations
+*Interchange detection
+*Interactive Swing GUI
 
 *TECHNOLOGIES USED*
--Java
--Java Swings
--Dijikstra algorithm
--Data Structures( Graphs, Priority Queue)
--OOP
+*Java
+*Java Swings
+*Dijikstra algorithm
+*Data Structures( Graphs, Priority Queue)
+*OOP
 
 HOW TO RUN-
 1. Clone the repository
